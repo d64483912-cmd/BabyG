@@ -55,6 +55,7 @@ export interface Task {
   status: 'pending' | 'executing' | 'completed';
   priority: number;
   createdAt: number;
+  startedAt?: number;
   completedAt?: number;
   result?: string;
   category?: string;
@@ -268,6 +269,40 @@ const getAgentRolePrompt = (role: AgentRole): string => {
   return rolePrompts[role];
 };
 
+// Execute a task with AI
+const executeTaskWithAI = async (task: Task, objective: Objective): Promise<string> => {
+  const startTime = Date.now();
+  
+  try {
+    toast.info(`🤖 Executing: ${task.title}`, { duration: 3000 });
+    
+    const { data, error } = await supabase.functions.invoke('execute-task', {
+      body: {
+        taskTitle: task.title,
+        taskDescription: task.category || '',
+        objectiveContext: `${objective.title}: ${objective.description}`,
+        agentRole: objective.agentRole || 'general'
+      }
+    });
+
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+
+    const executionTime = Math.round((Date.now() - startTime) / 1000);
+    
+    // Show result summary
+    const resultPreview = data.result?.substring(0, 100) + '...' || 'Task completed';
+    toast.success(`✅ Completed in ${executionTime}s: ${task.title}\n${resultPreview}`, { duration: 5000 });
+    
+    return data.result;
+  } catch (error) {
+    const executionTime = Math.round((Date.now() - startTime) / 1000);
+    console.error('Task execution failed after', executionTime, 's:', error);
+    toast.error(`❌ Failed after ${executionTime}s: ${task.title}`);
+    throw error;
+  }
+};
+
 // AI-powered Task Generator with role-specific behavior
 const generateTasksWithAI = async (objective: string, description: string, agentRole: AgentRole = 'general'): Promise<{ tasks: Task[], insights?: string }> => {
   try {
@@ -356,27 +391,28 @@ export default function BabyAGI() {
   const [learnedContext, setLearnedContext] = useState<string>('');
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Auto-processing effect
+  // Auto-processing effect with real AI execution
   useEffect(() => {
     if (!isProcessing || !currentObjective) return;
     
     const pendingTasks = currentObjective.tasks.filter(t => t.status === 'pending');
     if (pendingTasks.length === 0) {
       pauseProcessing();
-      
-      // Trigger reflection when all tasks are completed - removed for now to fix dependency issue
-      // Will be handled separately
       return;
     }
     
     const nextTask = pendingTasks[0];
     const taskIndex = currentObjective.tasks.findIndex(t => t.id === nextTask.id);
     
-    // Update task to executing
+    // Update task to executing with start time
     useStore.setState(state => {
       if (!state.currentObjective) return state;
       const updatedTasks = [...state.currentObjective.tasks];
-      updatedTasks[taskIndex] = { ...updatedTasks[taskIndex], status: 'executing' };
+      updatedTasks[taskIndex] = { 
+        ...updatedTasks[taskIndex], 
+        status: 'executing',
+        startedAt: Date.now()
+      };
       const updatedObjective = { ...state.currentObjective, tasks: updatedTasks };
       return {
         currentObjective: updatedObjective,
@@ -386,12 +422,26 @@ export default function BabyAGI() {
       };
     });
     
-    // Simulate task execution
-    const timer = setTimeout(() => {
-      completeTask(nextTask.id);
-    }, 2000 + Math.random() * 2000);
+    // Execute task with AI
+    let cancelled = false;
+    executeTaskWithAI(nextTask, currentObjective)
+      .then(() => {
+        if (!cancelled) {
+          completeTask(nextTask.id);
+        }
+      })
+      .catch((error) => {
+        console.error('Task execution failed:', error);
+        if (!cancelled) {
+          toast.error(`Task failed: ${error.message}`);
+          // Still complete the task but mark it with error
+          completeTask(nextTask.id);
+        }
+      });
     
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+    };
   }, [isProcessing, currentObjective, completeTask, pauseProcessing]);
 
   const fetchLearnedInsights = useCallback(async () => {
@@ -576,6 +626,25 @@ export default function BabyAGI() {
   const TaskItem: React.FC<{ task: Task; index: number; depth?: number }> = ({ task, index, depth = 0 }) => {
     const hasSubtasks = task.subtasks && task.subtasks.length > 0;
     const paddingLeft = depth * 24; // Indent by 24px per level
+    const [elapsedTime, setElapsedTime] = useState(0);
+    
+    // Live timer for executing tasks
+    useEffect(() => {
+      if (task.status === 'executing' && task.startedAt) {
+        const interval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - task.startedAt!) / 1000);
+          setElapsedTime(elapsed);
+        }, 1000);
+        
+        return () => clearInterval(interval);
+      }
+    }, [task.status, task.startedAt]);
+    
+    const formatElapsedTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+    };
     
     return (
       <>
@@ -658,13 +727,27 @@ export default function BabyAGI() {
               </div>
               
               {task.status === 'executing' && (
-                <div className="mt-2 w-full bg-white/10 rounded-full h-1 overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-yellow-400 to-orange-400"
-                    initial={{ width: '0%' }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: 2, ease: 'linear' }}
-                  />
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-yellow-400 font-medium">🔄 Executing...</span>
+                    <span className="text-xs text-yellow-400 font-mono">{formatElapsedTime(elapsedTime)}</span>
+                  </div>
+                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400"
+                      animate={{ 
+                        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                      }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity,
+                        ease: 'linear'
+                      }}
+                      style={{ 
+                        backgroundSize: '200% 100%'
+                      }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
