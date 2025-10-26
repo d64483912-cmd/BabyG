@@ -45,6 +45,8 @@ import ExportModal from './ExportModal';
 import PredictionInsights from './PredictionInsights';
 import WhatIfSimulator from './WhatIfSimulator';
 import PromptEditor from './PromptEditor';
+import SlidingSidebar from './SlidingSidebar';
+import { Menu } from 'lucide-react';
 
 // Types
 export interface Task {
@@ -352,6 +354,7 @@ export default function BabyAGI() {
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [learnedContext, setLearnedContext] = useState<string>('');
+  const [showSidebar, setShowSidebar] = useState(false);
 
   // Auto-processing effect
   useEffect(() => {
@@ -704,116 +707,21 @@ export default function BabyAGI() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
-                onClick={toggleLoopMode}
-                className={`px-3 py-2 rounded-lg transition-all flex items-center gap-2 ${
-                  loopModeEnabled 
-                    ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/50' 
-                    : 'bg-white/10 hover:bg-white/20'
-                }`}
-                title={loopModeEnabled ? "Loop Mode: ON - Auto-continues after completion" : "Loop Mode: OFF"}
+                onClick={() => setShowSidebar(true)}
+                className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all group"
+                title="Open Menu"
               >
-                <Repeat className={`w-4 h-4 ${loopModeEnabled ? 'animate-spin' : ''}`} style={{ animationDuration: '3s' }} />
-                {loopModeEnabled && (
-                  <span className="text-xs font-semibold hidden md:inline">LOOP</span>
-                )}
-              </button>
-              
-              <button
-                onClick={() => setShowAnalytics(!showAnalytics)}
-                className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all"
-                title="Analytics"
-              >
-                <BarChart3 className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowPredictions(!showPredictions)}
-                className={`px-3 py-2 rounded-lg transition-all ${
-                  showPredictions 
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/50' 
-                    : 'bg-white/10 hover:bg-white/20'
-                }`}
-                title="Predictive Insights"
-              >
-                <Zap className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowWhatIfSimulator(true)}
-                className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all"
-                title="What-If Simulator"
-              >
-                <GitBranch className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowLearningHistory(!showLearningHistory)}
-                className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all"
-                title="Learning History"
-              >
-                <Brain className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowChatPlanner(!showChatPlanner)}
-                className={`px-3 py-2 rounded-lg transition-all ${
-                  showChatPlanner 
-                    ? 'bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/50' 
-                    : 'bg-white/10 hover:bg-white/20'
-                }`}
-                title="AI Chat Planner"
-              >
-                <MessageSquare className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowKnowledgeBase(!showKnowledgeBase)}
-                className={`px-3 py-2 rounded-lg transition-all ${
-                  showKnowledgeBase 
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50' 
-                    : 'bg-white/10 hover:bg-white/20'
-                }`}
-                title="Knowledge Base"
-              >
-                <Lightbulb className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowSharedBoard(!showSharedBoard)}
-                className={`px-3 py-2 rounded-lg transition-all ${
-                  showSharedBoard 
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/50' 
-                    : 'bg-white/10 hover:bg-white/20'
-                }`}
-                title="Shared Objectives"
-              >
-                <Users className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowExportModal(true)}
-                className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all"
-                title="Export Data"
-              >
-                <Download className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowPromptEditor(true)}
-                className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all"
-                title="Prompt Templates"
-              >
-                <FileText className="w-4 h-4" />
+                <Menu className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               </button>
               
               <button
                 onClick={() => setShowNewObjective(true)}
-                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all"
+                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50"
               >
                 <Sparkles className="w-4 h-4" />
-                New Goal
+                <span className="hidden sm:inline">New Goal</span>
               </button>
             </div>
           </div>
@@ -1336,6 +1244,28 @@ export default function BabyAGI() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Sliding Sidebar Menu */}
+      <SlidingSidebar
+        isOpen={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        loopModeEnabled={loopModeEnabled}
+        onToggleLoopMode={toggleLoopMode}
+        showAnalytics={showAnalytics}
+        onToggleAnalytics={() => setShowAnalytics(!showAnalytics)}
+        showPredictions={showPredictions}
+        onTogglePredictions={() => setShowPredictions(!showPredictions)}
+        onOpenWhatIf={() => { setShowWhatIfSimulator(true); setShowSidebar(false); }}
+        onOpenLearningHistory={() => { setShowLearningHistory(!showLearningHistory); setShowSidebar(false); }}
+        showChatPlanner={showChatPlanner}
+        onToggleChatPlanner={() => setShowChatPlanner(!showChatPlanner)}
+        showKnowledgeBase={showKnowledgeBase}
+        onToggleKnowledgeBase={() => setShowKnowledgeBase(!showKnowledgeBase)}
+        showSharedBoard={showSharedBoard}
+        onToggleSharedBoard={() => setShowSharedBoard(!showSharedBoard)}
+        onOpenExport={() => { setShowExportModal(true); setShowSidebar(false); }}
+        onOpenPromptEditor={() => { setShowPromptEditor(true); setShowSidebar(false); }}
+      />
     </div>
   );
 }
