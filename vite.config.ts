@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ['icon-192.png', 'icon-512.png', 'favicon.ico'],
       manifest: false, // We're using public/manifest.json
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module'
       },
       workbox: {

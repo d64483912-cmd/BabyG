@@ -31,7 +31,8 @@ import {
   Briefcase,
   LineChart,
   Users,
-  GitBranch
+  GitBranch,
+  FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -360,10 +361,8 @@ export default function BabyAGI() {
     if (pendingTasks.length === 0) {
       pauseProcessing();
       
-      // Trigger reflection when all tasks are completed
-      if (currentObjective.tasks.length > 0 && currentObjective.tasks.every(t => t.status === 'completed')) {
-        handleReflectionAndContinue(currentObjective);
-      }
+      // Trigger reflection when all tasks are completed - removed for now to fix dependency issue
+      // Will be handled separately
       return;
     }
     
@@ -390,7 +389,7 @@ export default function BabyAGI() {
     }, 2000 + Math.random() * 2000);
     
     return () => clearTimeout(timer);
-  }, [isProcessing, currentObjective, completeTask, pauseProcessing, handleReflectionAndContinue]);
+  }, [isProcessing, currentObjective, completeTask, pauseProcessing]);
 
   const fetchLearnedInsights = useCallback(async () => {
     try {
