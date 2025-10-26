@@ -1,0 +1,259 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Deep Space Background - Darker, more dramatic */
+    --background: 240 25% 3%;
+    --foreground: 0 0% 98%;
+
+    /* Enhanced Card with subtle gradient */
+    --card: 240 20% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 20% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Vibrant Primary - Purple/Violet */
+    --primary: 270 70% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Enhanced Secondary */
+    --secondary: 280 60% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Deeper Muted */
+    --muted: 240 15% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    /* Vibrant Accent - Pink */
+    --accent: 330 75% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 75% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Enhanced Borders with subtle glow */
+    --border: 240 15% 18%;
+    --input: 240 20% 12%;
+    --ring: 270 70% 65%;
+
+    --radius: 1rem;
+
+    /* Enhanced Cosmic Gradients */
+    --gradient-start: 240 70% 12%;
+    --gradient-mid: 280 60% 20%;
+    --gradient-end: 330 70% 25%;
+    
+    /* Advanced Glass Effect - More pronounced */
+    --glass-bg: 240 15% 100% / 0.08;
+    --glass-border: 240 20% 100% / 0.15;
+    --glass-blur: 12px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    /* Glow Effects */
+    --glow-primary: 270 70% 65% / 0.5;
+    --glow-accent: 330 75% 65% / 0.5;
+    --glow-size: 20px;
+    
+    /* Status colors with enhanced vibrancy */
+    --status-pending: 240 15% 45%;
+    --status-executing: 45 100% 55%;
+    --status-completed: 140 65% 55%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 25% 3%;
+    --foreground: 0 0% 98%;
+    --card: 240 20% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 20% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 270 70% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 280 60% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 15% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 330 75% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 75% 65%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 15% 18%;
+    --input: 240 20% 12%;
+    --ring: 270 70% 65%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Cosmic background with subtle animated gradient */
+    background: linear-gradient(
+      135deg,
+      hsl(var(--background)) 0%,
+      hsl(240 25% 4%) 50%,
+      hsl(240 25% 3%) 100%
+    );
+    background-attachment: fixed;
+  }
+}
+
+/* Cosmic Glassmorphism Utility Classes */
+@layer utilities {
+  .glass {
+    background: hsla(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsla(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+  
+  .glass-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-hover:hover {
+    background: hsla(var(--glass-bg));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-color: hsla(var(--primary) / 0.3);
+    box-shadow: 
+      var(--glass-shadow),
+      0 0 var(--glow-size) hsla(var(--glow-primary));
+    transform: translateY(-2px);
+  }
+  
+  .gradient-border {
+    position: relative;
+    background: hsl(var(--card));
+    border: 1px solid transparent;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsla(var(--primary) / 0.5),
+      hsla(var(--accent) / 0.5)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  
+  .cosmic-glow {
+    box-shadow: 
+      0 0 var(--glow-size) hsla(var(--glow-primary)),
+      0 0 calc(var(--glow-size) * 2) hsla(var(--glow-accent));
+  }
+  
+  .text-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Cosmic Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.8;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes nebula-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Apply animations */
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsla(var(--primary) / 0.1),
+    transparent
+  );
+  background-size: 200% 100%;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-nebula {
+  animation: nebula-drift 8s ease-in-out infinite;
+  background-size: 200% 200%;
+}
